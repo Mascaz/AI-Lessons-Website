@@ -643,9 +643,23 @@ const YOUTH_STUDIO_DATA = {
 };
 
 /* --------------------------------------------------------------------------
-   Device Language Detection (Spanish if device matches 'es', default English)
+   Device Language Detection (with hidden ?lang=es or ?lang=en override)
    -------------------------------------------------------------------------- */
 function detectPreferredLanguage() {
+  // Hidden URL parameter for testing or direct sharing (?lang=es or ?lang=en)
+  const params = new URLSearchParams(window.location.search);
+  const urlLang = (params.get("lang") || "").toLowerCase();
+  if (urlLang === "es" || urlLang === "en") {
+    // Keep ?lang=... when clicking between internal edition links
+    document.querySelectorAll("a[href*='adults/'], a[href*='youth/'], a.brand-link").forEach((a) => {
+      const href = a.getAttribute("href");
+      if (href && !href.includes("lang=")) {
+        a.setAttribute("href", `${href}${href.includes("?") ? "&" : "?"}lang=${urlLang}`);
+      }
+    });
+    return urlLang;
+  }
+
   const navLangs = Array.isArray(navigator.languages) && navigator.languages.length
     ? navigator.languages
     : [navigator.language || "en"];
